@@ -34,6 +34,7 @@ DEFAULT_MIN_KELVIN = 3200
 DEFAULT_MAX_KELVIN = 5600
 MINI_MIN_KELVIN = 2700
 MINI_MAX_KELVIN = 7800
+MINI_MAX_RGB_CHANNEL = 99
 
 # Options-flow keys.
 CONF_PERSISTENT_CONNECTION = "persistent_connection"
@@ -104,3 +105,8 @@ def mini_protocol_kelvin(kelvin: int) -> int:
         PROTOCOL_MIN_KELVIN
         + ratio * (PROTOCOL_MAX_KELVIN - PROTOCOL_MIN_KELVIN)
     )
+
+
+def mini_protocol_rgb(rgb: tuple[int, int, int]) -> tuple[int, int, int]:
+    """Scale Home Assistant RGB bytes to the Mini's 0-99 channel range."""
+    return tuple(round(channel * MINI_MAX_RGB_CHANNEL / 255) for channel in rgb)

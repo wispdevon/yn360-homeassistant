@@ -15,6 +15,7 @@ from custom_components.yongnuo_yn360.const import (
     DEVICE_TYPE_YN360_MINI,
     DOMAIN,
     mini_protocol_kelvin,
+    mini_protocol_rgb,
 )
 
 ADDRESS = "AA:BB:CC:DD:EE:FF"
@@ -62,6 +63,12 @@ def test_mini_kelvin_mapping():
     assert mini_protocol_kelvin(2700) == 3200
     assert mini_protocol_kelvin(5250) == 4350
     assert mini_protocol_kelvin(7800) == 5500
+
+
+def test_mini_rgb_mapping():
+    assert mini_protocol_rgb((0, 0, 0)) == (0, 0, 0)
+    assert mini_protocol_rgb((255, 153, 0)) == (99, 59, 0)
+    assert mini_protocol_rgb((255, 255, 255)) == (99, 99, 99)
 
 
 async def test_make_device_supplies_a_client_factory(hass):
@@ -231,6 +238,28 @@ async def test_mini_profile_and_kelvin_mapping(hass):
     device.set_white.assert_awaited_once()
     assert device.set_white.await_args.args[0] == 5500
     assert hass.states.get(entity_id).attributes["color_temp_kelvin"] == 7800
+
+
+async def test_mini_rgb_command_uses_0_to_99_channel_range(hass):
+    with _patched_device() as device:
+        entity_id = await _setup(
+            hass,
+            title="YN360MiNi",
+            data={CONF_DEVICE_TYPE: DEVICE_TYPE_YN360_MINI},
+        )
+        await hass.services.async_call(
+            "light",
+            "turn_on",
+            {
+                "entity_id": entity_id,
+                "rgb_color": [255, 153, 0],
+                "brightness": 255,
+            },
+            blocking=True,
+        )
+
+    device.set_rgb.assert_awaited_once_with(99, 59, 0, brightness=1.0)
+    assert hass.states.get(entity_id).attributes["rgb_color"] == (255, 153, 0)
 
 
 async def test_legacy_mini_entry_is_inferred_from_title(hass):

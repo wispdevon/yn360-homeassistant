@@ -41,6 +41,7 @@ from .const import (
     TRANSITION_STEP_SECONDS,
     device_profile,
     mini_protocol_kelvin,
+    mini_protocol_rgb,
 )
 
 
@@ -259,7 +260,12 @@ class YN360LightEntity(LightEntity, RestoreEntity):
                     else kelvin
                 )
                 return device.set_white(protocol_kelvin, ratio)
-            return device.set_rgb(*rgb, brightness=ratio)
+            protocol_rgb = (
+                mini_protocol_rgb(rgb)
+                if self._profile.device_type == DEVICE_TYPE_YN360_MINI
+                else rgb
+            )
+            return device.set_rgb(*protocol_rgb, brightness=ratio)
 
         if transition and transition > 0:
             start = self._attr_brightness if self._attr_is_on else 0
@@ -318,7 +324,10 @@ class YN360LightEntity(LightEntity, RestoreEntity):
                             kelvin = mini_protocol_kelvin(kelvin)
                         await device.set_white(kelvin, ratio)
                     else:
-                        await device.set_rgb(*self._attr_rgb_color, brightness=ratio)
+                        rgb = self._attr_rgb_color
+                        if self._profile.device_type == DEVICE_TYPE_YN360_MINI:
+                            rgb = mini_protocol_rgb(rgb)
+                        await device.set_rgb(*rgb, brightness=ratio)
                     if step < steps:
                         await asyncio.sleep(transition / steps)
 

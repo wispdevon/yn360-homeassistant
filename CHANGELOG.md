@@ -6,6 +6,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-10-04
+
+### Fixed
+- **YN360 Mini RGB control** — scale Home Assistant's 0–255 RGB channels to
+  the Mini protocol's 0–99 range. Values above 99 were ignored by the light,
+  while colour-temperature commands continued to work.
+
 ## [0.4.1] - 2026-10-03
 
 ### Added
@@ -70,7 +77,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - GitHub Actions: `pytest` on every push/PR, plus `hassfest` and HACS validation.
 - English, Portuguese (pt-BR, pt), and Spanish (es) translations.
 
-[Unreleased]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.3.0...v0.4.1
 [0.3.0]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.1.0...v0.2.0

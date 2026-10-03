@@ -10,9 +10,9 @@
 [![Release](https://img.shields.io/github/v/release/hudsonbrendon/yn360-homeassistant)](https://github.com/hudsonbrendon/yn360-homeassistant/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Auto-discovers a **Yongnuo YN360 / YN360 III Pro** LED light over Bluetooth and
-exposes it as a Home Assistant `light` — on/off, brightness, RGB colour, and
-white colour temperature.
+Auto-discovers **Yongnuo YN360, YN360 III Pro, and YN360 Mini** LED lights over
+Bluetooth and exposes them as a Home Assistant `light` — on/off, brightness,
+RGB colour, and white colour temperature.
 
 The Bluetooth protocol and device control live in a separate Python library,
 [**`yn360-ble`**](https://github.com/hudsonbrendon/yn360-ble)
@@ -26,8 +26,8 @@ automatically via `manifest.json` `requirements`.
 - 💡 **On / off**
 - 🔆 **Brightness** (0–100%)
 - 🎨 **RGB colour**
-- 🌡️ **White colour temperature** — 3200 K (warm) to 5600 K (cool), the light's
-  bi-colour range (customisable in the options).
+- 🌡️ **White colour temperature** — 2700–7800 K on the YN360 Mini and
+  3200–5600 K on other supported YN360 models (customisable in the options).
 - 🌗 **Transitions** — software brightness fade via the `transition` parameter.
 - ♻️ **State restore** — last on/off, brightness and colour survive a restart
   (the light has no feedback, so it's an `assumed_state` entity).
@@ -48,8 +48,8 @@ automatically via `manifest.json` `requirements`.
 - A Bluetooth adapter on the Home Assistant host **or** an
   [ESPHome Bluetooth proxy](https://esphome.io/components/bluetooth_proxy.html)
   within range of the light.
-- A Yongnuo YN360 III Pro (other YN360 models using the same BLE protocol may
-  also work).
+- A Yongnuo YN360 Mini, YN360 III Pro, or another YN360 model using the same
+  BLE protocol.
 
 ## Installation
 
@@ -98,7 +98,7 @@ Configure**:
 | Option | Default | What it does |
 |---|---|---|
 | Keep the Bluetooth connection open | Off | When on, holds a persistent connection for lower latency. Trade-off: it occupies a Bluetooth slot and blocks the official Yongnuo app. Leave off to connect only while sending a command. |
-| Minimum / maximum colour temperature | 3200 / 5600 K | Override the white range exposed to Home Assistant. |
+| Minimum / maximum colour temperature | Model-specific | Override the white range exposed to Home Assistant. Defaults are 2700 / 7800 K for the YN360 Mini and 3200 / 5600 K for other supported models. |
 
 Example automation:
 
@@ -116,9 +116,15 @@ data:
 This repository ships **only** the Home Assistant integration. All Bluetooth
 work — connecting, building the command frames, RGB/white conversions — lives in
 the [`yn360-ble`](https://github.com/hudsonbrendon/yn360-ble) Python library and
-is pulled in as a dependency. The light is controlled with the 6-byte BLE command
-frames documented in that library, using acknowledged writes (the YN360 III Pro
-ignores write-without-response).
+is pulled in as a dependency. The YN360 Mini uses the same service UUID, write
+characteristic, and 6-byte command frames as the other supported lights; the
+integration maps its wider 2700–7800 K range onto those warm/cool channel values.
+Commands use acknowledged writes because supported hardware may ignore
+write-without-response.
+
+YN360 Mini discovery and protocol compatibility are based on the working
+[`YN360_Mac`](https://github.com/pinchies/YN360_Mac) implementation, where the
+Mini advertises as `YONGNUO LED`.
 
 ## Limitations
 

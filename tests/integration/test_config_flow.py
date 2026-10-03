@@ -12,9 +12,16 @@ from custom_components.yongnuo_yn360.const import (
     DEVICE_TYPE_YN360,
     DEVICE_TYPE_YN360_MINI,
     DOMAIN,
+    device_type_from_name,
 )
 
 ADDRESS = "AA:BB:CC:DD:EE:FF"
+
+
+def test_mini_device_names_are_classified_case_insensitively():
+    assert device_type_from_name("YONGNUO LED") == DEVICE_TYPE_YN360_MINI
+    assert device_type_from_name("YN360MiNi") == DEVICE_TYPE_YN360_MINI
+    assert device_type_from_name("YN360 Mini") == DEVICE_TYPE_YN360_MINI
 
 
 def _service_info(

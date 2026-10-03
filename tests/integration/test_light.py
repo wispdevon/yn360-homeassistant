@@ -11,6 +11,7 @@ from pytest_homeassistant_custom_component.common import (
 from custom_components.yongnuo_yn360.const import (
     CONF_DEVICE_TYPE,
     CONF_PERSISTENT_CONNECTION,
+    DEVICE_TYPE_YN360,
     DEVICE_TYPE_YN360_MINI,
     DOMAIN,
     mini_protocol_kelvin,
@@ -234,7 +235,13 @@ async def test_mini_profile_and_kelvin_mapping(hass):
 
 async def test_legacy_mini_entry_is_inferred_from_title(hass):
     with _patched_device() as device:
-        entity_id = await _setup(hass, title="YONGNUO LED")
+        entity_id = await _setup(
+            hass,
+            title="YN360MiNi",
+            data={CONF_DEVICE_TYPE: DEVICE_TYPE_YN360},
+        )
+        entity = hass.data["entity_components"]["light"].get_entity(entity_id)
+        assert entity.device_info["model"] == "YN360 Mini"
         await hass.services.async_call(
             "light",
             "turn_on",

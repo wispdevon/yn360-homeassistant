@@ -124,7 +124,7 @@ write-without-response.
 
 YN360 Mini discovery and protocol compatibility are based on the working
 [`YN360_Mac`](https://github.com/pinchies/YN360_Mac) implementation, where the
-Mini advertises as `YONGNUO LED`.
+Mini may advertise as `YONGNUO LED` or `YN360Mini`, depending on the unit.
 
 ## Limitations
 

@@ -14,5 +14,5 @@
   "iot_class": "assumed_state",
   "issue_tracker": "https://github.com/hudsonbrendon/yn360-homeassistant/issues",
   "requirements": ["yn360-ble==0.2.0", "bleak-retry-connector>=3.4.0"],
-  "version": "0.4.0"
+  "version": "0.4.1"
 }

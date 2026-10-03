@@ -24,7 +24,6 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
-
 from yn360 import YN360Light
 
 from .const import (
@@ -32,16 +31,16 @@ from .const import (
     CONF_MIN_KELVIN,
     CONF_PERSISTENT_CONNECTION,
     CONNECT_ATTEMPTS,
-    DEFAULT_MAX_KELVIN,
-    DEFAULT_MIN_KELVIN,
     DEFAULT_PERSISTENT_CONNECTION,
+    DEVICE_TYPE_YN360_MINI,
     DOMAIN,
     LOGGER,
     MANUFACTURER,
-    MODEL,
     RETRY_BACKOFF_SECONDS,
     TRANSITION_MAX_STEPS,
     TRANSITION_STEP_SECONDS,
+    device_profile,
+    mini_protocol_kelvin,
 )
 
 
@@ -74,19 +73,20 @@ class YN360LightEntity(LightEntity, RestoreEntity):
     def __init__(self, entry: ConfigEntry) -> None:
         self._entry = entry
         self._address = entry.unique_id
+        self._profile = device_profile(entry.data, entry.title)
         self._attr_unique_id = entry.unique_id
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.unique_id)},
             connections={("bluetooth", entry.unique_id)},
             name=entry.title,
             manufacturer=MANUFACTURER,
-            model=MODEL,
+            model=self._profile.model,
         )
         self._attr_min_color_temp_kelvin = entry.options.get(
-            CONF_MIN_KELVIN, DEFAULT_MIN_KELVIN
+            CONF_MIN_KELVIN, self._profile.min_kelvin
         )
         self._attr_max_color_temp_kelvin = entry.options.get(
-            CONF_MAX_KELVIN, DEFAULT_MAX_KELVIN
+            CONF_MAX_KELVIN, self._profile.max_kelvin
         )
         self._persistent = entry.options.get(
             CONF_PERSISTENT_CONNECTION, DEFAULT_PERSISTENT_CONNECTION
@@ -253,7 +253,12 @@ class YN360LightEntity(LightEntity, RestoreEntity):
         def _emit(device: YN360Light, brightness: int) -> Awaitable[None]:
             ratio = brightness / 255
             if mode == ColorMode.COLOR_TEMP:
-                return device.set_white(kelvin, ratio)
+                protocol_kelvin = (
+                    mini_protocol_kelvin(kelvin)
+                    if self._profile.device_type == DEVICE_TYPE_YN360_MINI
+                    else kelvin
+                )
+                return device.set_white(protocol_kelvin, ratio)
             return device.set_rgb(*rgb, brightness=ratio)
 
         if transition and transition > 0:
@@ -308,7 +313,10 @@ class YN360LightEntity(LightEntity, RestoreEntity):
                     if level <= 0:
                         await device.turn_off()
                     elif mode == ColorMode.COLOR_TEMP:
-                        await device.set_white(self._attr_color_temp_kelvin, ratio)
+                        kelvin = self._attr_color_temp_kelvin
+                        if self._profile.device_type == DEVICE_TYPE_YN360_MINI:
+                            kelvin = mini_protocol_kelvin(kelvin)
+                        await device.set_white(kelvin, ratio)
                     else:
                         await device.set_rgb(*self._attr_rgb_color, brightness=ratio)
                     if step < steps:

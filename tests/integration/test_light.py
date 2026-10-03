@@ -9,20 +9,29 @@ from pytest_homeassistant_custom_component.common import (
 )
 
 from custom_components.yongnuo_yn360.const import (
+    CONF_DEVICE_TYPE,
     CONF_PERSISTENT_CONNECTION,
+    DEVICE_TYPE_YN360_MINI,
     DOMAIN,
+    mini_protocol_kelvin,
 )
 
 ADDRESS = "AA:BB:CC:DD:EE:FF"
 
 
-async def _setup(hass, options: dict | None = None) -> str:
+async def _setup(
+    hass,
+    options: dict | None = None,
+    *,
+    title: str = "YN360III_Pro",
+    data: dict | None = None,
+) -> str:
     entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id=ADDRESS,
-        data={},
+        data=data or {},
         options=options or {},
-        title="YN360III_Pro",
+        title=title,
     )
     entry.add_to_hass(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)
@@ -46,6 +55,12 @@ def _patched_device(device: AsyncMock | None = None):
         return_value=True,
     ):
         yield device
+
+
+def test_mini_kelvin_mapping():
+    assert mini_protocol_kelvin(2700) == 3200
+    assert mini_protocol_kelvin(5250) == 4350
+    assert mini_protocol_kelvin(7800) == 5500
 
 
 async def test_make_device_supplies_a_client_factory(hass):
@@ -189,6 +204,45 @@ async def test_custom_kelvin_range_from_options(hass):
         state = hass.states.get(entity_id)
     assert state.attributes["min_color_temp_kelvin"] == 2700
     assert state.attributes["max_color_temp_kelvin"] == 6500
+
+
+async def test_mini_profile_and_kelvin_mapping(hass):
+    with _patched_device() as device:
+        entity_id = await _setup(
+            hass,
+            title="YONGNUO LED",
+            data={CONF_DEVICE_TYPE: DEVICE_TYPE_YN360_MINI},
+        )
+        state = hass.states.get(entity_id)
+        assert state.attributes["min_color_temp_kelvin"] == 2700
+        assert state.attributes["max_color_temp_kelvin"] == 7800
+
+        entity = hass.data["entity_components"]["light"].get_entity(entity_id)
+        assert entity.device_info["model"] == "YN360 Mini"
+
+        await hass.services.async_call(
+            "light",
+            "turn_on",
+            {"entity_id": entity_id, "color_temp_kelvin": 7800},
+            blocking=True,
+        )
+
+    device.set_white.assert_awaited_once()
+    assert device.set_white.await_args.args[0] == 5500
+    assert hass.states.get(entity_id).attributes["color_temp_kelvin"] == 7800
+
+
+async def test_legacy_mini_entry_is_inferred_from_title(hass):
+    with _patched_device() as device:
+        entity_id = await _setup(hass, title="YONGNUO LED")
+        await hass.services.async_call(
+            "light",
+            "turn_on",
+            {"entity_id": entity_id, "color_temp_kelvin": 2700},
+            blocking=True,
+        )
+
+    assert device.set_white.await_args.args[0] == 3200
 
 
 async def test_restores_last_state(hass):

@@ -6,6 +6,20 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-03
+
+### Added
+- **Yongnuo YN360 Mini support** — discovery now recognizes the Mini's
+  `YONGNUO LED` advertised name, and device metadata identifies it separately
+  from the YN360 III Pro.
+- **Full Mini colour-temperature range** — Home Assistant exposes 2700–7800 K
+  and maps it onto the existing warm/cool BLE protocol.
+
+### Changed
+- New config entries persist their detected device profile. Existing entries
+  remain compatible and infer the Mini profile from their saved title.
+- The integration version is now 0.4.0.
+
 ## [0.3.0] - 2026-08-20
 
 ### Changed
@@ -56,6 +70,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - GitHub Actions: `pytest` on every push/PR, plus `hassfest` and HACS validation.
 - English, Portuguese (pt-BR, pt), and Spanish (es) translations.
 
-[Unreleased]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/hudsonbrendon/yn360-homeassistant/releases/tag/v0.1.0

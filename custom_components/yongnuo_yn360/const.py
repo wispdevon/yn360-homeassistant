@@ -20,6 +20,7 @@ DEVICE_TYPE_YN360_MINI = "yn360_mini"
 
 # The Mini advertises this generic name rather than a YN360-prefixed name.
 MINI_DEVICE_NAME_PREFIX = "YONGNUO LED"
+MINI_MODEL_NAME_PREFIX = "YN360MINI"
 
 # yn360-ble converts this logical Kelvin range into the protocol's warm/cool
 # channel values. Mini temperatures are mapped onto it before calling the
@@ -74,7 +75,12 @@ YN360_MINI_PROFILE = DeviceProfile(
 
 def device_type_from_name(name: str | None) -> str:
     """Infer a device type from its advertised name."""
-    if (name or "").upper().startswith(MINI_DEVICE_NAME_PREFIX):
+    normalized_name = (name or "").upper().replace(" ", "")
+    mini_prefixes = (
+        MINI_DEVICE_NAME_PREFIX.replace(" ", ""),
+        MINI_MODEL_NAME_PREFIX,
+    )
+    if normalized_name.startswith(mini_prefixes):
         return DEVICE_TYPE_YN360_MINI
     return DEVICE_TYPE_YN360
 
@@ -82,7 +88,10 @@ def device_type_from_name(name: str | None) -> str:
 def device_profile(data: Mapping[str, Any], title: str) -> DeviceProfile:
     """Return the profile for a config entry, including legacy entries."""
     device_type = data.get(CONF_DEVICE_TYPE, device_type_from_name(title))
-    if device_type == DEVICE_TYPE_YN360_MINI:
+    if (
+        device_type == DEVICE_TYPE_YN360_MINI
+        or device_type_from_name(title) == DEVICE_TYPE_YN360_MINI
+    ):
         return YN360_MINI_PROFILE
     return YN360_PROFILE
 

@@ -17,5 +17,5 @@ def test_manifest_is_valid():
         {"local_name": "YONGNUO LED*"},
         {"service_uuid": "f000aa60-0451-4000-b000-000000000000"},
     ]
-    assert data["version"] == "0.4.2"
+    assert data["version"] == "0.4.3"
     assert any(r.startswith("yn360-ble") for r in data["requirements"])

@@ -116,10 +116,11 @@ data:
 This repository ships **only** the Home Assistant integration. All Bluetooth
 work — connecting, building the command frames, RGB/white conversions — lives in
 the [`yn360-ble`](https://github.com/hudsonbrendon/yn360-ble) Python library and
-is pulled in as a dependency. The YN360 Mini uses the same service UUID, write
-characteristic, and 6-byte command frames as the other supported lights; the
-integration maps its wider 2700–7800 K range onto those warm/cool channel values.
-It also scales Home Assistant's RGB channels to the Mini's 0–99 channel range.
+is pulled in as a dependency. The YN360 Mini uses the same service UUID and
+write characteristic as the other supported lights. Its white mode uses the
+compatible warm/cool frame, with the wider 2700–7800 K range mapped onto those
+channel values. For RGB, the integration uses the Mini's newer 8-byte command
+frame rather than the legacy `0xA1` RGB frame used by other YN360 models.
 Commands use acknowledged writes because supported hardware may ignore
 write-without-response.
 

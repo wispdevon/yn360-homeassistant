@@ -6,6 +6,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-10-04
+
+### Fixed
+- **YN360 Mini RGB mode switching** — use the Mini's newer 8-byte RGB frame.
+  Live hardware testing confirmed red, blue, and mixed-channel yellow output;
+  the legacy `0xA1` RGB frame used by other YN360 models is ignored by the Mini.
+
 ## [0.4.2] - 2026-10-04
 
 ### Fixed
@@ -77,7 +84,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - GitHub Actions: `pytest` on every push/PR, plus `hassfest` and HACS validation.
 - English, Portuguese (pt-BR, pt), and Spanish (es) translations.
 
-[Unreleased]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.4.3...HEAD
+[0.4.3]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.3.0...v0.4.1
 [0.3.0]: https://github.com/hudsonbrendon/yn360-homeassistant/compare/v0.2.0...v0.3.0

@@ -15,7 +15,6 @@ from custom_components.yongnuo_yn360.const import (
     DEVICE_TYPE_YN360_MINI,
     DOMAIN,
     mini_protocol_kelvin,
-    mini_protocol_rgb,
 )
 
 ADDRESS = "AA:BB:CC:DD:EE:FF"
@@ -50,6 +49,8 @@ def _patched_device(device: AsyncMock | None = None):
     with patch(
         "custom_components.yongnuo_yn360.light.YN360Light", return_value=device
     ), patch(
+        "custom_components.yongnuo_yn360.light.YN360MiniLight", return_value=device
+    ), patch(
         "custom_components.yongnuo_yn360.light.bluetooth.async_ble_device_from_address",
         return_value=object(),
     ), patch(
@@ -63,12 +64,6 @@ def test_mini_kelvin_mapping():
     assert mini_protocol_kelvin(2700) == 3200
     assert mini_protocol_kelvin(5250) == 4350
     assert mini_protocol_kelvin(7800) == 5500
-
-
-def test_mini_rgb_mapping():
-    assert mini_protocol_rgb((0, 0, 0)) == (0, 0, 0)
-    assert mini_protocol_rgb((255, 153, 0)) == (99, 59, 0)
-    assert mini_protocol_rgb((255, 255, 255)) == (99, 99, 99)
 
 
 async def test_make_device_supplies_a_client_factory(hass):
@@ -240,7 +235,7 @@ async def test_mini_profile_and_kelvin_mapping(hass):
     assert hass.states.get(entity_id).attributes["color_temp_kelvin"] == 7800
 
 
-async def test_mini_rgb_command_uses_0_to_99_channel_range(hass):
+async def test_mini_rgb_command_uses_mini_device(hass):
     with _patched_device() as device:
         entity_id = await _setup(
             hass,
@@ -258,7 +253,7 @@ async def test_mini_rgb_command_uses_0_to_99_channel_range(hass):
             blocking=True,
         )
 
-    device.set_rgb.assert_awaited_once_with(99, 59, 0, brightness=1.0)
+    device.set_rgb.assert_awaited_once_with(255, 153, 0, brightness=1.0)
     assert hass.states.get(entity_id).attributes["rgb_color"] == (255, 153, 0)
 
 

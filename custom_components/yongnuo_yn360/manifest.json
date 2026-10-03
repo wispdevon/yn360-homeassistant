@@ -3,6 +3,7 @@
   "name": "Yongnuo YN360",
   "bluetooth": [
     { "local_name": "YN360*" },
+    { "local_name": "YONGNUO LED*" },
     { "service_uuid": "f000aa60-0451-4000-b000-000000000000" }
   ],
   "codeowners": ["@hudsonbrendon"],
@@ -13,5 +14,5 @@
   "iot_class": "assumed_state",
   "issue_tracker": "https://github.com/hudsonbrendon/yn360-homeassistant/issues",
   "requirements": ["yn360-ble==0.2.0", "bleak-retry-connector>=3.4.0"],
-  "version": "0.3.0"
+  "version": "0.4.0"
 }

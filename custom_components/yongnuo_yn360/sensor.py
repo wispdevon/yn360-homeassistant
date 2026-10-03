@@ -14,7 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN, MANUFACTURER, MODEL
+from .const import DOMAIN, MANUFACTURER, device_profile
 
 
 async def async_setup_entry(
@@ -39,13 +39,14 @@ class YN360RSSISensor(SensorEntity):
 
     def __init__(self, entry: ConfigEntry) -> None:
         self._address = entry.unique_id
+        profile = device_profile(entry.data, entry.title)
         self._attr_unique_id = f"{entry.unique_id}_rssi"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.unique_id)},
             connections={("bluetooth", entry.unique_id)},
             name=entry.title,
             manufacturer=MANUFACTURER,
-            model=MODEL,
+            model=profile.model,
         )
 
     @property

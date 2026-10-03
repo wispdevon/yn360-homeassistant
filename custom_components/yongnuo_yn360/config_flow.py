@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import voluptuous as vol
 from homeassistant.components.bluetooth import (
     BluetoothServiceInfoBleak,
     async_discovered_service_info,
@@ -15,18 +16,18 @@ from homeassistant.config_entries import (
     OptionsFlow,
 )
 from homeassistant.core import callback
-import voluptuous as vol
-
 from yn360.const import DEVICE_NAME_PREFIX, SERVICE_UUID
 
 from .const import (
+    CONF_DEVICE_TYPE,
     CONF_MAX_KELVIN,
     CONF_MIN_KELVIN,
     CONF_PERSISTENT_CONNECTION,
-    DEFAULT_MAX_KELVIN,
-    DEFAULT_MIN_KELVIN,
     DEFAULT_PERSISTENT_CONNECTION,
     DOMAIN,
+    MINI_DEVICE_NAME_PREFIX,
+    device_profile,
+    device_type_from_name,
 )
 
 
@@ -34,7 +35,8 @@ def _supports(info: BluetoothServiceInfoBleak) -> bool:
     """Return True when a discovered BLE device looks like a Yongnuo YN360."""
     name = (info.name or "").upper()
     uuids = [u.lower() for u in info.service_uuids]
-    return name.startswith(DEVICE_NAME_PREFIX.upper()) or SERVICE_UUID in uuids
+    prefixes = (DEVICE_NAME_PREFIX.upper(), MINI_DEVICE_NAME_PREFIX)
+    return name.startswith(prefixes) or SERVICE_UUID in uuids
 
 
 class YN360ConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -68,7 +70,12 @@ class YN360ConfigFlow(ConfigFlow, domain=DOMAIN):
         """Confirm adding a discovered device."""
         assert self._discovery is not None
         if user_input is not None:
-            return self.async_create_entry(title=self._discovery.name, data={})
+            return self.async_create_entry(
+                title=self._discovery.name,
+                data={
+                    CONF_DEVICE_TYPE: device_type_from_name(self._discovery.name)
+                },
+            )
         self._set_confirm_only()
         return self.async_show_form(
             step_id="bluetooth_confirm",
@@ -84,7 +91,10 @@ class YN360ConfigFlow(ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(address, raise_on_progress=False)
             self._abort_if_unique_id_configured()
             info = self._discovered[address]
-            return self.async_create_entry(title=info.name, data={})
+            return self.async_create_entry(
+                title=info.name,
+                data={CONF_DEVICE_TYPE: device_type_from_name(info.name)},
+            )
 
         current = self._async_current_ids()
         for info in async_discovered_service_info(self.hass):
@@ -117,6 +127,7 @@ class YN360OptionsFlow(OptionsFlow):
         """Manage the options."""
         errors: dict[str, str] = {}
         options = self.config_entry.options
+        profile = device_profile(self.config_entry.data, self.config_entry.title)
 
         if user_input is not None:
             if user_input[CONF_MIN_KELVIN] >= user_input[CONF_MAX_KELVIN]:
@@ -134,11 +145,11 @@ class YN360OptionsFlow(OptionsFlow):
                 ): bool,
                 vol.Required(
                     CONF_MIN_KELVIN,
-                    default=options.get(CONF_MIN_KELVIN, DEFAULT_MIN_KELVIN),
+                    default=options.get(CONF_MIN_KELVIN, profile.min_kelvin),
                 ): vol.All(vol.Coerce(int), vol.Range(min=1000, max=10000)),
                 vol.Required(
                     CONF_MAX_KELVIN,
-                    default=options.get(CONF_MAX_KELVIN, DEFAULT_MAX_KELVIN),
+                    default=options.get(CONF_MAX_KELVIN, profile.max_kelvin),
                 ): vol.All(vol.Coerce(int), vol.Range(min=1000, max=10000)),
             }
         )
